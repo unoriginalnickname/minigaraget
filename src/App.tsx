@@ -16,30 +16,53 @@ export default function App() {
   // 2. State för formulärets inmatningsfält
   const [regNumber, setRegNumber] = useState("");
   const [brand, setBrand] = useState("");
+  const [shake, setShake] = useState(false);
+  const [hasTried, setHasTried] = useState(false);
 
-  // 3. State för enkel felhantering
-  const [error, setError] = useState("");
+  const regnumberRegex = /^[A-Z]{3}[0-9]{2}([0-9]{1}|[A-Z]{1})$/;
 
-  // TODO: Implementera funktionen för att lägga till bil
+  const trimmedReg = regNumber.trim().toUpperCase();
+  const trimmedBrand = brand.trim();
+  const isRegValid = regnumberRegex.test(trimmedReg);
+  const isBrandValid = trimmedBrand !== "";
+  const isInputValid = isBrandValid && isRegValid;
+
+  const errors: string[] = [];
+  if (!isRegValid) errors.push("Ogiltigt regnummer, t.ex. ABC123");
+  if (!isBrandValid) errors.push("Ogiltigt märke, t.ex. Volvo");
+
+  let errorBox = null;
+  if (hasTried && errors.length > 0) {
+    errorBox = (
+      <div className="mb-4 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg text-sm space-y-1">
+        {errors.map((msg) => (
+          <p key={msg}>{msg}</p>
+        ))}
+      </div>
+    );
+  }
+
   const handleAddCar = () => {
-    if (regNumber.trim() && brand.trim()) {
-      const newCar = { id: Date.now(), regNumber: regNumber, brand: brand };
-      setCars((prev) => [...prev, newCar]);
-      setRegNumber("");
-      setBrand("");
+    if (!isInputValid) {
+      setHasTried(true);
+      setShake(true);
+      return;
     }
 
-    // Tips: Validera att fälten inte är tomma (!regNumber.trim() || !brand.trim())
-    // Skapa ett nytt bilobjekt med id: Date.now()
-    // Uppdatera state med spread-operatorn: setCars(prev => [...prev, newCar])
-    // Nollställ fälten efteråt
+    const newCar = {
+      id: Date.now(),
+      regNumber: trimmedReg,
+      brand: trimmedBrand,
+    };
+    setCars((prev) => [...prev, newCar]);
+    setRegNumber("");
+    setBrand("");
+    setHasTried(false);
   };
 
-  // TODO: Implementera funktionen för att ta bort en bil baserat på id
   const handleDeleteCar = (id: number) => {
-    const filteredArray = cars.filter((x) => x.id != id);
+    const filteredArray = cars.filter((x) => x.id !== id);
     setCars(filteredArray);
-    // Tips: Använd .filter() för att behålla alla bilar vars id inte matchar det som ska tas bort
   };
 
   return (
@@ -47,7 +70,7 @@ export default function App() {
       <div className="max-w-xl mx-auto">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-emerald-400 mb-2">
-            Minigaraget (Startskal)
+            Minigaraget
           </h1>
           <p className="text-slate-400">
             Antal bilar i garaget:{" "}
@@ -61,11 +84,7 @@ export default function App() {
             Parkera nytt fordon
           </h2>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          {errorBox}
 
           <div className="space-y-4">
             <div>
@@ -75,7 +94,9 @@ export default function App() {
               <input
                 type="text"
                 value={regNumber}
-                onChange={(e) => setRegNumber(e.target.value)}
+                onChange={(e) => {
+                  setRegNumber(e.target.value);
+                }}
                 placeholder="t.ex. ABC123"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white uppercase focus:outline-none focus:border-emerald-500"
               />
@@ -88,7 +109,9 @@ export default function App() {
               <input
                 type="text"
                 value={brand}
-                onChange={(e) => setBrand(e.target.value)}
+                onChange={(e) => {
+                  setBrand(e.target.value);
+                }}
                 placeholder="t.ex. Volvo"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
               />
@@ -97,7 +120,8 @@ export default function App() {
             <button
               type="button"
               onClick={handleAddCar}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer shadow-md"
+              onAnimationEnd={() => setShake(false)}
+              className={`${isInputValid ? "bg-emerald-600 hover:bg-emerald-500" : "bg-gray-600"} ${shake ? "shake" : ""} w-full text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer shadow-md`}
             >
               Parkera bil
             </button>
