@@ -20,12 +20,32 @@ export default function App() {
   const [hasTried, setHasTried] = useState(false);
 
   const regnumberRegex = /^[A-Z]{3}[0-9]{2}([0-9]{1}|[A-Z]{1})$/;
+  const brandRegex = /^[A-Z]{1}[a-z]+$/;
 
   const trimmedReg = regNumber.trim().toUpperCase();
   const trimmedBrand = brand.trim();
   const isRegValid = regnumberRegex.test(trimmedReg);
-  const isBrandValid = trimmedBrand !== "";
+  const isBrandValid = brandRegex.test(trimmedBrand);
   const isInputValid = isBrandValid && isRegValid;
+
+  //BORDER COLOR PICKERS
+  const regBorderShowGreen = hasTried && isRegValid;
+  const regBorderShowRed = hasTried && !isRegValid;
+
+  const brandBorderShowGreen = hasTried && isBrandValid;
+  const brandBorderShowRed = hasTried && !isBrandValid;
+
+  const brandInputColorPicker = brandBorderShowGreen
+    ? "border-green-500"
+    : brandBorderShowRed
+      ? "border-red-500"
+      : "border-slate-500";
+
+  const regInputBorderColorPicker = regBorderShowGreen
+    ? "border-green-500"
+    : regBorderShowRed
+      ? "border-red-500"
+      : "border-slate-500";
 
   const errors: string[] = [];
   if (!isRegValid) errors.push("Ogiltigt regnummer, t.ex. ABC123");
@@ -34,7 +54,7 @@ export default function App() {
   let errorBox = null;
   if (hasTried && errors.length > 0) {
     errorBox = (
-      <div className="mb-4 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg text-sm space-y-1">
+      <div className="top-0 ml-20  mb-4 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg text-sm space-y-1">
         {errors.map((msg) => (
           <p key={msg}>{msg}</p>
         ))}
@@ -68,7 +88,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-8 font-sans">
       <div className="max-w-xl mx-auto">
-        <header className="mb-8 text-center">
+        <header className="mb-8 ">
           <h1 className="text-3xl font-bold text-emerald-400 mb-2">
             Minigaraget
           </h1>
@@ -79,12 +99,10 @@ export default function App() {
         </header>
 
         {/* Formulär för att parkera fordon */}
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-emerald-300">
+        <div className="bg-slate-800 relative p-6 rounded-xl border border-slate-700 shadow-lg mb-8">
+          <h2 className="text-xl  font-semibold mb-4 text-emerald-300">
             Parkera nytt fordon
           </h2>
-
-          {errorBox}
 
           <div className="space-y-4">
             <div>
@@ -98,7 +116,7 @@ export default function App() {
                   setRegNumber(e.target.value);
                 }}
                 placeholder="t.ex. ABC123"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white uppercase focus:outline-none focus:border-emerald-500"
+                className={`w-full ${regInputBorderColorPicker} bg-slate-900 border rounded-lg px-4 py-2 text-white uppercase focus:outline-none focus:border-emerald-500`}
               />
             </div>
 
@@ -113,18 +131,20 @@ export default function App() {
                   setBrand(e.target.value);
                 }}
                 placeholder="t.ex. Volvo"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                className={` ${brandInputColorPicker} w-full bg-slate-900 border  rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500`}
               />
             </div>
-
-            <button
-              type="button"
-              onClick={handleAddCar}
-              onAnimationEnd={() => setShake(false)}
-              className={`${isInputValid ? "bg-emerald-600 hover:bg-emerald-500" : "bg-gray-600"} ${shake ? "shake" : ""} w-full text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer shadow-md`}
-            >
-              Parkera bil
-            </button>
+            <div className="flex ">
+              <button
+                type="button"
+                onClick={handleAddCar}
+                onAnimationEnd={() => setShake(false)}
+                className={` ${shake ? "shake" : ""} bg-gray-600 border-slate-700 mt-4 mb-4 min-w-30 w-40 h-15 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer shadow-md`}
+              >
+                Parkera bil
+              </button>
+              <div className="min-h-4">{errorBox}</div>
+            </div>
           </div>
         </div>
 
